@@ -1,8 +1,0 @@
-torch
-Pillow
-mlx-vlm
-PyPDF2
-olmocr
-torchvision
-validators
-jiwer

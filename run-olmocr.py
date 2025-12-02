@@ -10,11 +10,9 @@ import hashlib
 
 from io import BytesIO
 from PIL import Image
-from pathlib import Path
+from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
 
-# Use mlx_vlm's load to load both model and processor
-from mlx_vlm import load, apply_chat_template, generate
-from mlx_vlm.utils import load_image # <-- Import load_image from mlx_vlm.utils
+from pathlib import Path
 
 from olmocr.data.renderpdf import render_pdf_to_base64png
 from olmocr.prompts import PageResponse, build_finetuning_prompt # <--- PageResponse import (CORRECTED)
@@ -43,7 +41,9 @@ args = parser.parse_args()
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # Load model and processor using mlx_vlm.load (like the example)
-olmocr_model, olmocr_processor = load(args.model) # Load both model and processor from mlx_vlm
+# Initialize the model
+olmocr_model = Qwen2VLForConditionalGeneration.from_pretrained("allenai/olmOCR-7B-0225-preview", torch_dtype=torch.bfloat16).eval()
+olmocr_processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
 olmocr_config = olmocr_model.config # Get model config
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu") # Keep device check
@@ -81,25 +81,30 @@ for page_num in range(1, num_pages + 1): # Loop through all pages
 
     # Apply chat template
     # print(f"apply_chat_template function: {apply_chat_template}")
-    text_prompt = apply_chat_template(olmocr_processor, olmocr_config, messages) # Pass messages list
-
+    #text_prompt = olmocr_processor.apply_chat_template(olmocr_processor, olmocr_config, messages) # Pass messages list
+    text_prompt = olmocr_processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     # Generate text
     page_generated_text = "" # Store generated text for current page
+    if not os.path.exists("output"):
+      os.makedirs("output")
     try:
         # Get tokenizer reference for easier use
         tokenizer = olmocr_processor.tokenizer
 
         # print("\nStarting token generation for this page...")
         # Generate text and iterate over the tokens as they're generated
-        for tokens in generate(
-            olmocr_model,
-            olmocr_processor,
-            text_prompt,
-            main_image,
-            max_tokens = args.max_tokens,
-            temperature = args.temperature,
-        ):
+        # for tokens in olmocr_model.generate(
+        page_generated_text = olmocr_model.generate(
+#                                olmocr_model,
+#                                olmocr_processor,
+                                **inputs,
+                                text_prompt,
+                                main_image,
+                                max_tokens = args.max_tokens,
+                                temperature = args.temperature,
+                              )
 
+==begin
             # Handle different token types (using modified logic from Action 11b)
             chunk = ""
             if isinstance(tokens, str):
@@ -114,6 +119,7 @@ for page_num in range(1, num_pages + 1): # Loop through all pages
                 continue
 
             page_generated_text += chunk
+==end
 
     except Exception as e:
         print(f"\nError during generation for page {page_num}: {e}")
