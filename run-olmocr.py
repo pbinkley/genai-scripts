@@ -1,3 +1,5 @@
+# based on https://huggingface.co/allenai/olmOCR-2-7B-1025
+
 import torch
 import base64
 import urllib.request
