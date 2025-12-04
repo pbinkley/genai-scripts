@@ -2,6 +2,7 @@ venv
 .DS_Store
 olmocr-pipeline-debug.log
 output/*
+olmocr_pdf_samples
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
