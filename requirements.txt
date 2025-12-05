@@ -135,7 +135,8 @@ supervisor==4.3.0
 sympy==1.14.0
 tiktoken==0.12.0
 tokenizers==0.22.1
-torch==2.9.1+cu128
+torch==2.9.1+cu128; platform_system == "Windows"
+torch; sys_platform == "Darwin"
 torchvision==0.24.1
 tqdm==4.67.1
 transformers==4.57.3
@@ -144,7 +145,7 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==2.5.0
 uvicorn==0.38.0
-vllm==0.11.2
+vllm
 watchfiles==1.1.1
 wcwidth==0.2.14
 webencodings==0.5.1
