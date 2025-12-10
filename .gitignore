@@ -3,6 +3,7 @@ venv
 olmocr-pipeline-debug.log
 output/*
 olmocr_pdf_samples
+source/*
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
